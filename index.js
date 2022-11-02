@@ -8,8 +8,12 @@ const sqlite3Config = require('./config/sqlite3.config')
 
 const Database = require('./controllers/db.controller')
 
-const dbMensajes = new Database(sqlite3Config)
-const dbProductos = new Database(MariaDBConfig)
+
+const TABLA_MENSAJES = 'mensajes'
+const TABLA_PRODUCTOS = 'productos'
+
+const dbMensajes = new Database(sqlite3Config, TABLA_MENSAJES)
+const dbProductos = new Database(MariaDBConfig, TABLA_PRODUCTOS)
 
 //! SERVER
 const app = express()
@@ -47,8 +51,8 @@ io.on('connection', async socket => {
     
     //! ENVIA PRODUCTOS Y MENSAJES DE LA DB
     try {
-        const allProducts = await dbProductos.selectAllProducts()
-        const allMessages = await dbMensajes.selectAllMessages()
+        const allProducts = await dbProductos.selectAll()
+        const allMessages = await dbMensajes.selectAll()
         socket.emit('productos', allProducts)
         socket.emit('mensajes', allMessages)
     } catch (err) {
@@ -59,8 +63,8 @@ io.on('connection', async socket => {
     socket.on('nuevo_producto', async data => {
         const { title, price, thumbnail } = data
         try {
-            await dbProductos.newProduct({ title, price, thumbnail})
-            const allProducts = await dbProductos.selectAllProducts()
+            await dbProductos.insertValue({ title, price, thumbnail})
+            const allProducts = await dbProductos.selectAll()
             io.sockets.emit('productos', allProducts)
         } catch (error) {
             console.log(error)
@@ -71,8 +75,8 @@ io.on('connection', async socket => {
     socket.on('nuevo_mensaje',  async msg => {
         try {
             const { correo, mensaje, hora } = msg
-            await dbMensajes.newMessage({ correo, mensaje, hora})
-            const  allMessages = await dbMensajes.selectAllMessages()
+            await dbMensajes.insertValue({ correo, mensaje, hora})
+            const  allMessages = await dbMensajes.selectAll()
             io.sockets.emit('mensajes', allMessages)
         } catch (err) {
             console.log(`Error get all messages from db: ${err.message}`)

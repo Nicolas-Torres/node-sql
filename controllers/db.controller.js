@@ -1,45 +1,25 @@
 const knex = require('knex')
 
-const TABLA_MENSAJES = 'mensajes'
-const TABLA_PRODUCTOS = 'productos'
-
 module.exports = class Database {
-    constructor(config){
+    constructor(config, table){
         this.Knex = knex(config)
+        this.table = table
     }
 
-    async selectAllMessages(){
+    async selectAll(){
         try {
-            return await this.Knex.from(TABLA_MENSAJES)
+            return await this.Knex.from(this.table)
                 .select('*')
         } catch (error){
             console.log(error)
         }
     }
 
-    async newMessage(newMsg){
+    async insertValue(obj){
         try {
-            await this.Knex(TABLA_MENSAJES)
-                .insert(newMsg)
+            await this.Knex(this.table)
+                .insert(obj)
         } catch(error) {
-            console.log(error)
-        }
-    }
-
-    async selectAllProducts(){
-        try {
-            return await this.Knex.from(TABLA_PRODUCTOS)
-                .select('*')
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    async newProduct(newProd){
-        try{
-            await this.Knex(TABLA_PRODUCTOS)
-            .insert(newProd)
-        } catch (error) {
             console.log(error)
         }
     }
